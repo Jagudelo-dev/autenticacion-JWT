@@ -49,7 +49,8 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 	protected boolean shouldNotFilter(HttpServletRequest request) {
 		String contextPath = request.getContextPath();
 		String pathWithinApplication = request.getRequestURI().substring(contextPath.length());
-		return pathWithinApplication.startsWith("/api/v1/auth/");
+		return pathWithinApplication.startsWith("/auth/")
+				|| pathWithinApplication.startsWith("/api/v1/auth/");
 	}
 
 	private void writeUnauthorized(HttpServletResponse response, String error) throws IOException {
