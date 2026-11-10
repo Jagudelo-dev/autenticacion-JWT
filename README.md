@@ -4,13 +4,7 @@ API de autenticación en desarrollo, construida con Spring Boot y Java.
 
 ## Tecnologías
 
-- Java 17
-- Spring Boot 4.x
-- H2 en memoria
-- Spring Data JPA
-- JWT con JJWT 0.12.6
-- Lombok
-- Spring Security Crypto, con BCrypt para el hash de contraseñas
+- Java 17 · Spring Boot 4.1.2 (versión estable actual a noviembre de 2026) · Maven · JPA · H2 · Lombok · jjwt 0.12.6 · spring-security-crypto (BCrypt)
 
 ## Arquitectura por Capas
 
@@ -21,6 +15,6 @@ El proyecto sigue una arquitectura en capas para separar responsabilidades y fac
 - **Repository:** abstrae el acceso a datos con Spring Data JPA.
 - **Entity/Domain:** representa los datos persistidos; incluye las entidades de usuarios y roles.
 - **DTO:** define los datos de entrada y salida de la API, separados del modelo de persistencia. Se añadirá junto con los endpoints.
-- **Config/Filter:** centraliza la configuración de seguridad y los filtros HTTP para procesar tokens en las solicitudes protegidas. Se añadirá al implementar la autenticación HTTP.
+- **Config/Filter:** configura y aplica el filtro HTTP que valida JWT y agrega sus claims a las solicitudes, exceptuando las rutas de autenticación.
 
 El manual de usuario se agregará cuando la API esté funcional.
