@@ -7,6 +7,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.JoseMiguelAgudelo.autenticacion_JWT.service.JwtService;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,14 +35,20 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 		}
 
 		String token = authorizationHeader.substring(BEARER_PREFIX.length());
-		if (!jwtService.isTokenValid(token)) {
+		try {
+			if (!jwtService.isTokenValid(token)) {
+				writeUnauthorized(response, "Token is invalid");
+				return;
+			}
+
+			request.setAttribute("username", jwtService.extractSubject(token));
+			request.setAttribute("userId", jwtService.extractUserId(token));
+			request.setAttribute("rolId", jwtService.extractRolId(token));
+		} catch (JwtException exception) {
 			writeUnauthorized(response, "Token is invalid");
 			return;
 		}
 
-		request.setAttribute("username", jwtService.extractSubject(token));
-		request.setAttribute("userId", jwtService.extractUserId(token));
-		request.setAttribute("rolId", jwtService.extractRolId(token));
 		filterChain.doFilter(request, response);
 	}
 
