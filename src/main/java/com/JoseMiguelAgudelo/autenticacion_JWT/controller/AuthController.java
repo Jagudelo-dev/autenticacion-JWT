@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.JoseMiguelAgudelo.autenticacion_JWT.dto.HttpGlobalResponseDTO;
+import com.JoseMiguelAgudelo.autenticacion_JWT.dto.LoginRequestDTO;
 import com.JoseMiguelAgudelo.autenticacion_JWT.dto.LoginResponseDTO;
 import com.JoseMiguelAgudelo.autenticacion_JWT.dto.RegisterRequestDTO;
 import com.JoseMiguelAgudelo.autenticacion_JWT.dto.UserDTO;
@@ -25,6 +26,16 @@ public class AuthController {
 	private static final String BEARER_PREFIX = "Bearer ";
 
 	private final AuthService authService;
+
+	@PostMapping("login")
+	public ResponseEntity<HttpGlobalResponseDTO<LoginResponseDTO>> login(
+			@RequestBody LoginRequestDTO loginRequest) {
+		HttpGlobalResponseDTO<LoginResponseDTO> response = authService.login(loginRequest);
+		if (response.getData() == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+		}
+		return ResponseEntity.ok(response);
+	}
 
 	@PostMapping("refresh")
 	public ResponseEntity<HttpGlobalResponseDTO<LoginResponseDTO>> refreshToken(HttpServletRequest request) {

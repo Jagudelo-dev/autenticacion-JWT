@@ -2,6 +2,7 @@ package com.JoseMiguelAgudelo.autenticacion_JWT.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -18,6 +19,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.JoseMiguelAgudelo.autenticacion_JWT.dto.HttpGlobalResponseDTO;
+import com.JoseMiguelAgudelo.autenticacion_JWT.dto.LoginRequestDTO;
+import com.JoseMiguelAgudelo.autenticacion_JWT.dto.LoginResponseDTO;
 import com.JoseMiguelAgudelo.autenticacion_JWT.dto.RegisterRequestDTO;
 import com.JoseMiguelAgudelo.autenticacion_JWT.dto.UserDTO;
 import com.JoseMiguelAgudelo.autenticacion_JWT.entity.Users;
@@ -41,6 +44,38 @@ class AuthServiceTest {
 
 	@InjectMocks
 	private AuthService authService;
+
+	@Test
+	void testLoginSuccess() {
+		LoginRequestDTO request = createLoginRequest();
+		Users user = new Users();
+		user.setId(42L);
+		user.setUsername(request.getUsername());
+		user.setPassword("encoded-password");
+		user.setRolId(2L);
+		when(userRepository.findByUsername(request.getUsername())).thenReturn(Optional.of(user));
+		when(passwordEncoder.matches(request.getPassword(), user.getPassword())).thenReturn(true);
+		when(jwtService.generateToken(user.getId(), user.getUsername(), user.getRolId())).thenReturn("jwt-token");
+
+		HttpGlobalResponseDTO<LoginResponseDTO> response = authService.login(request);
+
+		assertEquals("Login exitoso", response.getMessage());
+		assertEquals("jwt-token", response.getData().getJwt());
+	}
+
+	@Test
+	void testLoginInvalidCredentials() {
+		LoginRequestDTO request = createLoginRequest();
+		Users user = new Users();
+		user.setPassword("encoded-password");
+		when(userRepository.findByUsername(request.getUsername())).thenReturn(Optional.of(user));
+		when(passwordEncoder.matches(request.getPassword(), user.getPassword())).thenReturn(false);
+
+		HttpGlobalResponseDTO<LoginResponseDTO> response = authService.login(request);
+
+		assertEquals("Credenciales inválidas", response.getMessage());
+		assertNull(response.getData());
+	}
 
 	@Test
 	void testBCryptHashesAreDifferentButMatch() {
@@ -95,6 +130,13 @@ class AuthServiceTest {
 		request.setPassword("test-password");
 		request.setEmail("jane@example.com");
 		request.setRolId(2L);
+		return request;
+	}
+
+	private LoginRequestDTO createLoginRequest() {
+		LoginRequestDTO request = new LoginRequestDTO();
+		request.setUsername("jane");
+		request.setPassword("test-password");
 		return request;
 	}
 }

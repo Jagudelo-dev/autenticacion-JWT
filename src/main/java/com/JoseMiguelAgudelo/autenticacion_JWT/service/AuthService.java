@@ -4,6 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.JoseMiguelAgudelo.autenticacion_JWT.dto.HttpGlobalResponseDTO;
+import com.JoseMiguelAgudelo.autenticacion_JWT.dto.LoginRequestDTO;
 import com.JoseMiguelAgudelo.autenticacion_JWT.dto.LoginResponseDTO;
 import com.JoseMiguelAgudelo.autenticacion_JWT.dto.RegisterRequestDTO;
 import com.JoseMiguelAgudelo.autenticacion_JWT.dto.UserDTO;
@@ -21,6 +22,18 @@ public class AuthService {
 	private final UserRepository userRepository;
 	private final RolRepository rolRepository;
 	private final PasswordEncoder passwordEncoder;
+
+	public HttpGlobalResponseDTO<LoginResponseDTO> login(LoginRequestDTO request) {
+		Users user = userRepository.findByUsername(request.getUsername()).orElse(null);
+		if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+			return createResponse("Credenciales inválidas", null);
+		}
+
+		String jwt = jwtService.generateToken(user.getId(), user.getUsername(), user.getRolId());
+		LoginResponseDTO loginResponse = new LoginResponseDTO();
+		loginResponse.setJwt(jwt);
+		return createResponse("Login exitoso", loginResponse);
+	}
 
 	public HttpGlobalResponseDTO<LoginResponseDTO> refreshToken(String token) throws Exception {
 		String jwt = jwtService.refreshToken(token);
